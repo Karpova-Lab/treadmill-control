@@ -9,7 +9,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-version  =  "1.0.2"
+#*Semantic Versioning
+# MAJOR version when you make incompatible API changes,
+# MINOR version when you add functionality in a backwards-compatible manner, and
+# PATCH version when you make backwards-compatible bug fixes.
+
+version  =  "1.0.3"
 versionDate = "02/22/2019"
 
 if sys.platform == 'darwin':
@@ -99,7 +104,7 @@ class MainWindow(QMainWindow):
         self.setupMenu()
 
     def connectMotors(self):
-        if (not self.left_motor.isConnected and not self.right_motor.isConnected):
+        if (not self.left_motor.isConnected and not self.right_motor.isConnected): #Connect button clicked
             # get values from memory
             settings = QSettings('Bobcat Engineering','Treadmill')
             hub_serialNumber = settings.value('Hub S/N',type=int)
@@ -124,10 +129,13 @@ class MainWindow(QMainWindow):
                     self.connect_btn.setText('Connect')            
                     QMessageBox.warning(self, 'Error',
                     "Failed to connect to the right motor on port [{}] of hub [{}].\n\nIn the Settings dialog, check that the Phidget Setup has the correct values".format(righ_motorPort,hub_serialNumber), QMessageBox.Ok)
-        else:
-            self.left_motor.close_connection()
-            self.right_motor.close_connection()
-            self.connect_btn.setText('Connect')
+        else: # Disconnect button clicked
+            self.disconnectMotors()
+
+    def disconnectMotors(self):
+        self.left_motor.close_connection()
+        self.right_motor.close_connection()
+        self.connect_btn.setText('Connect')
 
     def updateMotors(self):
         self.left_motor.update_fxn()
@@ -166,8 +174,8 @@ class MainWindow(QMainWindow):
             self.right_motor.getSpeed()
 
         dataText = '{:.3f},{:.1f},{:.1f}\n'.format(time.time()- self.startTime,self.left_motor.speed,self.right_motor.speed)
-        self.textEdit.insertPlainText(dataText)
         self.textEdit.moveCursor(QTextCursor.End) #scrolls to the end whenever there is new data
+        self.textEdit.insertPlainText(dataText)
 
     def saveFile(self):
         saveName = QFileDialog.getSaveFileName(self,
@@ -177,8 +185,7 @@ class MainWindow(QMainWindow):
         print("savename"+saveName[0])
 
         if saveName[0] != '':
-            self.left_motor.open_connection()
-            self.right_motor.open_connection()
+            self.disconnectMotors()
             with open(saveName[0], "w") as text_file:
                 text_file.write(self.textEdit.toPlainText())
         else:
@@ -192,7 +199,7 @@ class MainWindow(QMainWindow):
         openFolder(str(Path(os.getcwd())))     
 
     def closeEvent(self, event):
-        self.left_motor.close_connection()
+        self.disconnectMotors()
         # reply = QMessageBox.question(self, 'Message',
         #     "Are you sure to quit?", QMessageBox.Yes, QMessageBox.No)
         # if reply == QMessageBox.Yes:
