@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-version  =  "1.0.0"
+version  =  "1.0.1"
 versionDate = "02/22/2019"
 
 if sys.platform == 'darwin':
@@ -112,17 +112,18 @@ class MainWindow(QMainWindow):
             try:
                 self.left_motor.open_connection(hub_serialNumber,left_motorPort)
             except:
+                self.connect_btn.setText('Connect')            
                 QMessageBox.warning(self, 'Error',
-                "Failed to connect to the left motor.\n\nIn the Settings dialog, check that the Phidget Setup has the correct values", QMessageBox.Ok)
+                "Failed to connect to the left motor on port [{}] of hub [{}].\n\nIn the Settings dialog, check that the Phidget Setup has the correct values".format(left_motorPort,hub_serialNumber), QMessageBox.Ok)
                 keepGoing = False
             if keepGoing:
                 try:
                     self.right_motor.open_connection(hub_serialNumber,righ_motorPort)
                 except:
                     self.left_motor.close_connection()
-                    self.connect_btn.setText('Connect')                
+                    self.connect_btn.setText('Connect')            
                     QMessageBox.warning(self, 'Error',
-                    "Failed to connect to the right motor.\n\nIn the Settings dialog, check that the Phidget Setup has the correct values", QMessageBox.Ok)
+                    "Failed to connect to the right motor on port [{}] of hub [{}].\n\nIn the Settings dialog, check that the Phidget Setup has the correct values".format(righ_motorPort,hub_serialNumber), QMessageBox.Ok)
         else:
             self.left_motor.close_connection()
             self.right_motor.close_connection()
