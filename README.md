@@ -18,7 +18,7 @@ This is documentation for controlling a split-belt treadmill. The hardware was d
 ### Requirements
 - Python 3
 - PyQt5
-- Phidget Drivers and python libararies
+- Phidget Drivers and python libraries
 
 ### Installation
 

@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-version  =  "1.0.1"
+version  =  "1.0.2"
 versionDate = "02/22/2019"
 
 if sys.platform == 'darwin':
@@ -172,7 +172,7 @@ class MainWindow(QMainWindow):
     def saveFile(self):
         saveName = QFileDialog.getSaveFileName(self,
                         "Save Velocity Log",
-                        self.animalSelection.currentText() + "_" + self.startDateTime + "_treadmill_log","(*.csv)"
+                        self.settingsDialog.saveDefault.value.text() +'/'+ self.animalSelection.currentText() + "_" + self.startDateTime + "_treadmill_log","(*.csv)"
                         )
         print("savename"+saveName[0])
 
