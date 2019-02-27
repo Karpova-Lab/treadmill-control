@@ -16,9 +16,9 @@ This is documentation for controlling a split-belt treadmill. The hardware was d
 ## Control Software
 
 ### Requirements
-- Python 3
-- PyQt5
-- Phidget Drivers and python libraries
+- [Python 3](https://www.python.org)
+- [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro)
+- Phidget Drivers and Python libraries
 
 ### Installation
 
@@ -30,7 +30,9 @@ This is documentation for controlling a split-belt treadmill. The hardware was d
 
 ### Quickstart
 
-1. In the "root" of this directory, run `python treadmill.py` from the command line
+1. Start the program
+    - If you're on a Windows computer you can double click the "run_program.bat" file to start the program
+    - Otherwise, from the command line, navigate to this directory and run `python treadmill.py`
 2. Click the "Edit Settings" 
     - Setup a default save directory
     - Input the Hub serial number and correct port numbers for the connected motors
