@@ -28,8 +28,9 @@ class TreadMotor(QObject):
         # widgets
         self.connect = QPushButton('Connect '+saveName)
         self.flip_checkbox = QCheckBox('Flip Direction')
-        self.accel = label_and_spin('Acceleration',[.1,100],.05,.1)
-        self.duty = label_and_spin('Duty Cycle',[0,1],.05,.1)
+        self.accel = label_and_spin('Acceleration',[.1,100],.01,.1)
+        self.decel = label_and_spin('Deceleration',[0,100],.01,.1)
+        self.duty = label_and_spin('Duty Cycle',[0,1],.01,.1)
         self.speed_lbl = QLabel(' rpm')
         self.speed_lbl.setAlignment(Qt.AlignCenter)
 
@@ -38,7 +39,8 @@ class TreadMotor(QObject):
         control_layout = QGridLayout()
         control_layout.addWidget(self.flip_checkbox,0,0,Qt.AlignCenter)
         control_layout.addWidget(self.accel.widget,1,0)
-        control_layout.addWidget(self.duty.widget,2,0)
+        control_layout.addWidget(self.decel.widget,2,0)
+        control_layout.addWidget(self.duty.widget,3,0)
         control_layout.addWidget(self.speed_lbl,4,0)
         self.control_group.setLayout(control_layout)
         self.control_group.setEnabled(False)
@@ -52,7 +54,6 @@ class TreadMotor(QObject):
         self.saveName = saveName
         self.dir = direction
 
-
     def update_fxn(self):
         if self.flip_checkbox.isChecked():
             flip = -1
@@ -62,6 +63,7 @@ class TreadMotor(QObject):
         self.ch.setAcceleration(self.accel.spin.value())
 
     def stop_fxn(self):
+        self.ch.setAcceleration(self.decel.spin.value()) # set to 0 for e-stop
         self.ch.setTargetVelocity(0)
     
     def open_connection(self,serialNumber,motorPort):

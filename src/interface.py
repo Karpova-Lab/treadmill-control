@@ -13,9 +13,8 @@ from pathlib import Path
 # MAJOR version when you make incompatible API changes,
 # MINOR version when you add functionality in a backwards-compatible manner, and
 # PATCH version when you make backwards-compatible bug fixes.
-
-version  =  "1.0.3"
-versionDate = "02/22/2019"
+version  =  "1.1.0"
+versionDate = "02/27/2019"
 
 if sys.platform == 'darwin':
     def openFolder(path):
@@ -41,50 +40,64 @@ class MainWindow(QMainWindow):
         window_layout = QGridLayout()
 
         # create widgets
+        columnWidth = 188
+
         self.settings_btn = QPushButton('Edit Settings')
         self.settings_btn.setIcon(QIcon('src/icons/settings.svg'))
         self.settings_btn.setIconSize(QSize(11,11))
         self.settings_btn.setFlat(True)
+
+        self.independent_check = QCheckBox('Independent Control')
+        self.independent_check.setEnabled(False)
+
         self.left_motor = TreadMotor('Left Motor',1)      
         self.right_motor = TreadMotor('Right Motor',-1)   
+        self.left_motor.control_group.setFixedWidth(columnWidth)
+        self.right_motor.control_group.setFixedWidth(columnWidth)
+
         self.settingsDialog = settingsWindow()
         self.animalID =  QLabel('Animal #')
         self.animalSelection = QComboBox()
         self.updateRatList()
         self.connect_btn  = QPushButton('Connect')   
+
         self.update_btn = QPushButton('Update Parameters')
+        self.update_btn.setFixedWidth(columnWidth)
         self.update_btn.setEnabled(False)
+
         self.stop_btn = QPushButton()
         self.stop_btn.setIcon(QIcon('src/icons/stop.svg'))
-        self.stop_btn.setIconSize(QSize(40,40))
+        self.stop_btn.setIconSize(QSize(columnWidth*.7,columnWidth*.7))
+        self.stop_btn.setFixedSize(columnWidth,columnWidth)
         self.stop_btn.setEnabled(False)
+
         self.textEdit = QPlainTextEdit()
         self.textEdit.setEnabled(False)
+        self.textEdit.setFixedWidth(columnWidth)
+        
         self.saveButton = QPushButton("Save and Disconnect")
         self.saveButton.setEnabled(False)
-
 
         # place widgets
         setup_group = QGroupBox('Experiment Setup')
         setup_layout = QGridLayout()    
         setup_layout.addWidget(self.animalID,0,0,Qt.AlignRight)  
         setup_layout.addWidget(self.animalSelection,0,1)  
-        setup_layout.addWidget(self.connect_btn,1,0,1,2)
-
-
+        setup_layout.addWidget(self.connect_btn,0,2)
         setup_group.setLayout(setup_layout)
 
         # add widgets to main window
         window_layout.addWidget(self.settings_btn,0,0,Qt.AlignLeft)  
         window_layout.addWidget(setup_group,1,0,1,2)
-        window_layout.addWidget(self.left_motor.control_group,2,0)
-        window_layout.addWidget(self.right_motor.control_group,2,1)
-        window_layout.addWidget(self.update_btn,3,0,1,2)
-        window_layout.addWidget(self.stop_btn,4,0,1,2)
-
-        window_layout.addWidget(self.textEdit,5,0,1,2)
-        window_layout.addWidget(self.saveButton,6,0,1,2)
+        window_layout.addWidget(self.independent_check,2,0,1,2,Qt.AlignCenter)
+        window_layout.addWidget(self.left_motor.control_group,3,0,Qt.AlignRight)
+        window_layout.addWidget(self.right_motor.control_group,3,1,Qt.AlignLeft)
+        window_layout.addWidget(self.update_btn,4,0,Qt.AlignRight)
+        window_layout.addWidget(self.stop_btn,5,0,Qt.AlignRight)
+        window_layout.addWidget(self.textEdit,4,1,3,1,Qt.AlignLeft)
+        window_layout.addWidget(self.saveButton,7,0,1,2)
         main_widget.setLayout(window_layout)
+        window_layout.setRowStretch(6,1)
 
         self.setCentralWidget(main_widget)
         self.setWindowTitle('Treadmill Controller')
@@ -99,9 +112,24 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.printData)
         self.update_btn.clicked.connect(self.updateMotors)
         self.stop_btn.clicked.connect(self.stopMotors)
+        self.left_motor.flip_checkbox.clicked.connect(self.right_motor.flip_checkbox.setChecked)
+        self.left_motor.accel.spin.valueChanged.connect(self.matchRight)
+        self.left_motor.decel.spin.valueChanged.connect(self.matchRight)
+        self.left_motor.duty.spin.valueChanged.connect(self.matchRight)
+        self.independent_check.clicked.connect(self.makeIndependent)
 
         # Menu
         self.setupMenu()
+
+    def matchRight(self):
+        if not self.independent_check.isChecked():
+            self.right_motor.accel.spin.setValue(self.left_motor.accel.spin.value())
+            self.right_motor.decel.spin.setValue(self.left_motor.decel.spin.value())
+            self.right_motor.duty.spin.setValue(self.left_motor.duty.spin.value())
+
+    def makeIndependent(self):
+        self.right_motor.control_group.setEnabled(self.independent_check.isChecked())
+        self.matchRight()
 
     def connectMotors(self):
         if (not self.left_motor.isConnected and not self.right_motor.isConnected): #Connect button clicked
@@ -124,6 +152,7 @@ class MainWindow(QMainWindow):
             if keepGoing:
                 try:
                     self.right_motor.open_connection(hub_serialNumber,righ_motorPort)
+                    self.makeIndependent()
                 except:
                     self.left_motor.close_connection()
                     self.connect_btn.setText('Connect')            
@@ -146,6 +175,7 @@ class MainWindow(QMainWindow):
         self.right_motor.stop_fxn()
 
     def startUpdating(self):
+        self.independent_check.setEnabled(True)
         self.update_btn.setEnabled(True)
         self.stop_btn.setEnabled(True)
         self.animalSelection.setEnabled(False)
@@ -159,6 +189,7 @@ class MainWindow(QMainWindow):
         self.textEdit.moveCursor(QTextCursor.End) #scrolls to the end whenever there is new data
 
     def stopUpdating(self):
+        self.independent_check.setEnabled(False)
         self.update_btn.setEnabled(False)
         self.stop_btn.setEnabled(False)
         self.animalSelection.setEnabled(True)

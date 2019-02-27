@@ -18,12 +18,16 @@ class settingsWindow(QDialog):
         # create widgets
         self.saveDefault = directoryChooser(saveDirectorySuggestion)
         self.phidgetSetup = phidgetSettings(serialSuggestion,leftSuggestion,rightSuggestion)
+        self.phidgetSetup.group.setFixedWidth(200)
         self.ratList  = itemList()
+        self.ratList.groupbox.setFixedWidth(170)
+
         # place widgets
         settingsLayout = QGridLayout()
-        settingsLayout.addWidget(self.saveDefault.groupBox,0,0)
-        settingsLayout.addWidget(self.phidgetSetup.group,1,0)
-        settingsLayout.addWidget(self.ratList.groupbox,2,0)
+        settingsLayout.addWidget(self.saveDefault.groupBox,0,0,1,2)
+        settingsLayout.addWidget(self.phidgetSetup.group,1,0,Qt.AlignRight)
+        settingsLayout.addWidget(self.ratList.groupbox,1,1,2,1,Qt.AlignLeft)
+        settingsLayout.setRowStretch(2,1)
         self.setLayout(settingsLayout)
 
         #widget connections
@@ -77,8 +81,8 @@ class directoryChooser():
 class phidgetSettings():
     def __init__(self,serialSuggestion,leftSuggestion,rightSuggestion):
         self.serial = label_and_text('Hub S/N',serialSuggestion)
-        self.left_motor_port = label_and_text('Left Motor Port',leftSuggestion)
-        self.right_motor_port = label_and_text('Right Motor Port',rightSuggestion)
+        self.left_motor_port = label_and_text('Left\nMotor Port',leftSuggestion)
+        self.right_motor_port = label_and_text('Right\nMotor Port',rightSuggestion)
 
         self.group = QGroupBox('Phidget Setup')
         layout = QGridLayout()       
@@ -99,8 +103,7 @@ class itemList():
         except:
             pass
 
-
-        self.groupbox = QGroupBox('Animals')
+        self.groupbox = QGroupBox('Animal IDs')
         self.layout = QGridLayout()
         self.layout.addWidget(self.item_input,0,0)
         self.layout.addWidget(self.add_btn,0,1)

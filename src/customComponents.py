@@ -24,6 +24,7 @@ class label_and_spin():
 class label_and_text():
     def __init__(self,label,startVal,vertical=True):
         self.label = QLabel(label)
+        self.label.setAlignment(Qt.AlignCenter)
         
         self.line = QLineEdit()
         self.line.setAlignment(Qt.AlignCenter)
