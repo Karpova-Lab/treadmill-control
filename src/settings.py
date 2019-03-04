@@ -20,7 +20,7 @@ class settingsWindow(QDialog):
         self.phidgetSetup = phidgetSettings(serialSuggestion,leftSuggestion,rightSuggestion)
         self.phidgetSetup.group.setFixedWidth(200)
         self.ratList  = itemList()
-        self.ratList.groupbox.setFixedWidth(170)
+        self.ratList.groupbox.setFixedWidth(200)
 
         # place widgets
         settingsLayout = QGridLayout()
@@ -60,9 +60,10 @@ class directoryChooser():
         # place widgets
         self.groupBox = QGroupBox('Saving Defaults')
         layout = QGridLayout()
-        layout.addWidget(self.label,0,0)
-        layout.addWidget(self.value,1,0)
+        layout.addWidget(self.label,0,0,1,2)
+        layout.addWidget(self.value,1,0,1,2)
         layout.addWidget(self.edit_btn,2,0)
+        layout.setColumnStretch(1,1)
         self.groupBox.setLayout(layout)
 
         # widget connections
@@ -93,8 +94,8 @@ class phidgetSettings():
 
 class itemList():
     def __init__(self):
-        self.add_btn =  QPushButton('Add')
-        self.remove_btn = QPushButton('Remove')
+        self.add_btn =  QPushButton('Add ID')
+        self.remove_btn = QPushButton('Remove Selection')
         self.item_input = QLineEdit()
         self.list = QListWidget()
         settings = QSettings('Bobcat Engineering','Treadmill')

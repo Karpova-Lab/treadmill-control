@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QLabel,QDoubleSpinBox,QWidget,QGridLayout,QLineEdit,QGroupBox,QPushButton
+from PyQt5.QtWidgets import QLabel, QDoubleSpinBox, QWidget, QGridLayout, QLineEdit, QGroupBox, QPushButton
 from PyQt5.QtCore import Qt
 
 class label_and_spin():
@@ -16,7 +16,7 @@ class label_and_spin():
         self.layout.addWidget(self.label,0,0,Qt.AlignRight)
         self.layout.addWidget(self.spin,0,1)
         self.widget.setLayout(self.layout)
-    
+        
     def setEnabled(self,val):
         self.label.setEnabled(val)
         self.spin.setEnabled(val)

@@ -6,15 +6,13 @@ from src.settings import *
 import time
 import os
 import subprocess
-import sys
 from pathlib import Path
-
 #*Semantic Versioning
 # MAJOR version when you make incompatible API changes,
 # MINOR version when you add functionality in a backwards-compatible manner, and
 # PATCH version when you make backwards-compatible bug fixes.
-version  =  "1.1.0"
-versionDate = "02/27/2019"
+version  =  "1.2.0"
+versionDate = "03/04/2019"
 
 if sys.platform == 'darwin':
     def openFolder(path):
@@ -61,15 +59,13 @@ class MainWindow(QMainWindow):
         self.updateRatList()
         self.connect_btn  = QPushButton('Connect')   
 
-        self.update_btn = QPushButton('Update Parameters')
-        self.update_btn.setFixedWidth(columnWidth)
-        self.update_btn.setEnabled(False)
+        self.minus_btn = QPushButton('-')
+        self.plus_btn = QPushButton('+')
 
         self.stop_btn = QPushButton()
         self.stop_btn.setIcon(QIcon('src/icons/stop.svg'))
         self.stop_btn.setIconSize(QSize(columnWidth*.7,columnWidth*.7))
         self.stop_btn.setFixedSize(columnWidth,columnWidth)
-        self.stop_btn.setEnabled(False)
 
         self.textEdit = QPlainTextEdit()
         self.textEdit.setEnabled(False)
@@ -86,43 +82,57 @@ class MainWindow(QMainWindow):
         setup_layout.addWidget(self.connect_btn,0,2)
         setup_group.setLayout(setup_layout)
 
+        #live controls Widget
+        self.liveWidget = QWidget()
+        live_layout = QGridLayout()
+        live_layout.addWidget(self.minus_btn,1,0)
+        live_layout.addWidget(self.plus_btn,1,1)
+        live_layout.addWidget(self.stop_btn,2,0,1,2)
+        live_layout.setContentsMargins(0,0,0,0)
+        self.liveWidget.setLayout(live_layout)
+        self.liveWidget.setEnabled(False)
+
+
         # add widgets to main window
         window_layout.addWidget(self.settings_btn,0,0,Qt.AlignLeft)  
         window_layout.addWidget(setup_group,1,0,1,2)
         window_layout.addWidget(self.independent_check,2,0,1,2,Qt.AlignCenter)
         window_layout.addWidget(self.left_motor.control_group,3,0,Qt.AlignRight)
         window_layout.addWidget(self.right_motor.control_group,3,1,Qt.AlignLeft)
-        window_layout.addWidget(self.update_btn,4,0,Qt.AlignRight)
-        window_layout.addWidget(self.stop_btn,5,0,Qt.AlignRight)
+        window_layout.addWidget(self.liveWidget,4,0,Qt.AlignRight)
         window_layout.addWidget(self.textEdit,4,1,3,1,Qt.AlignLeft)
+        window_layout.setRowStretch(6,1)
         window_layout.addWidget(self.saveButton,7,0,1,2)
         main_widget.setLayout(window_layout)
-        window_layout.setRowStretch(6,1)
 
         self.setCentralWidget(main_widget)
         self.setWindowTitle('Treadmill Controller')
 
         # connections
         self.left_motor.startClock.connect(self.startUpdating)
-        self.left_motor.stopClock.connect(self.stopUpdating)        
+        self.left_motor.stopClock.connect(self.stopUpdating)
         self.saveButton.clicked.connect(self.saveFile)
         self.settingsDialog.settingsClosed.connect(self.updateRatList)
         self.settings_btn.clicked.connect(self.settingsDialog.exec)
         self.connect_btn.clicked.connect(self.connectMotors)
         self.timer.timeout.connect(self.printData)
-        self.update_btn.clicked.connect(self.updateMotors)
+        self.left_motor.update_btn.clicked.connect(self.leftUpdateClicked)
+        self.right_motor.update_btn.clicked.connect(self.rightUpdateClicked)
         self.stop_btn.clicked.connect(self.stopMotors)
-        self.left_motor.flip_checkbox.clicked.connect(self.right_motor.flip_checkbox.setChecked)
+        self.left_motor.flip_checkbox.clicked.connect(self.matchRight)
         self.left_motor.accel.spin.valueChanged.connect(self.matchRight)
         self.left_motor.decel.spin.valueChanged.connect(self.matchRight)
         self.left_motor.duty.spin.valueChanged.connect(self.matchRight)
         self.independent_check.clicked.connect(self.makeIndependent)
+        self.minus_btn.clicked.connect(self.decrease_duty)
+        self.plus_btn.clicked.connect(self.increase_duty)
 
         # Menu
         self.setupMenu()
 
     def matchRight(self):
         if not self.independent_check.isChecked():
+            self.right_motor.flip_checkbox.setChecked(self.left_motor.flip_checkbox.isChecked())
             self.right_motor.accel.spin.setValue(self.left_motor.accel.spin.value())
             self.right_motor.decel.spin.setValue(self.left_motor.decel.spin.value())
             self.right_motor.duty.spin.setValue(self.left_motor.duty.spin.value())
@@ -145,7 +155,7 @@ class MainWindow(QMainWindow):
             try:
                 self.left_motor.open_connection(hub_serialNumber,left_motorPort)
             except:
-                self.connect_btn.setText('Connect')            
+                self.connect_btn.setText('Connect')
                 QMessageBox.warning(self, 'Error',
                 "Failed to connect to the left motor on port [{}] of hub [{}].\n\nIn the Settings dialog, check that the Phidget Setup has the correct values".format(left_motorPort,hub_serialNumber), QMessageBox.Ok)
                 keepGoing = False
@@ -166,18 +176,43 @@ class MainWindow(QMainWindow):
         self.right_motor.close_connection()
         self.connect_btn.setText('Connect')
 
+    def leftUpdateClicked(self):
+        if self.independent_check.isChecked():
+            self.left_motor.update_fxn()
+            self.liveWidget.setEnabled(True)
+        else:
+            self.updateMotors()
+
+    def rightUpdateClicked(self):
+        self.right_motor.update_fxn()
+        self.liveWidget.setEnabled(True)
+
     def updateMotors(self):
         self.left_motor.update_fxn()
         self.right_motor.update_fxn()
+        self.liveWidget.setEnabled(True)
+
+    def increase_duty(self):
+        self.left_motor.duty.spin.setValue(self.left_motor.duty.spin.value() + .01) 
+        if self.independent_check.isChecked():
+            self.right_motor.duty.spin.setValue(self.right_motor.duty.spin.value() + .01) 
+        self.updateMotors()
+
+    def decrease_duty(self):
+        self.left_motor.duty.spin.setValue(self.left_motor.duty.spin.value() - .01) 
+        if self.independent_check.isChecked():
+            self.right_motor.duty.spin.setValue(self.right_motor.duty.spin.value() - .01) 
+        self.updateMotors()
+
 
     def stopMotors(self):
         self.left_motor.stop_fxn()
         self.right_motor.stop_fxn()
+        self.liveWidget.setEnabled(False)
+
 
     def startUpdating(self):
         self.independent_check.setEnabled(True)
-        self.update_btn.setEnabled(True)
-        self.stop_btn.setEnabled(True)
         self.animalSelection.setEnabled(False)
         self.textEdit.setEnabled(True)
         self.saveButton.setEnabled(True)
@@ -190,8 +225,6 @@ class MainWindow(QMainWindow):
 
     def stopUpdating(self):
         self.independent_check.setEnabled(False)
-        self.update_btn.setEnabled(False)
-        self.stop_btn.setEnabled(False)
         self.animalSelection.setEnabled(True)
         self.textEdit.setEnabled(False)
         self.saveButton.setEnabled(False)
@@ -204,21 +237,22 @@ class MainWindow(QMainWindow):
         if self.right_motor.isConnected:
             self.right_motor.getSpeed()
 
-        dataText = '{:.3f},{:.1f},{:.1f}\n'.format(time.time()- self.startTime,self.left_motor.speed,self.right_motor.speed)
+        dataText = '{:.3f},{:.1f},{:.1f}\n'.format(time.time()- self.startTime,self.left_motor.speed,self.right_motor.speed) 
         self.textEdit.moveCursor(QTextCursor.End) #scrolls to the end whenever there is new data
         self.textEdit.insertPlainText(dataText)
 
     def saveFile(self):
         saveName = QFileDialog.getSaveFileName(self,
-                        "Save Velocity Log",
-                        self.settingsDialog.saveDefault.value.text() +'/'+ self.animalSelection.currentText() + "_" + self.startDateTime + "_treadmill_log","(*.csv)"
-                        )
+                                               "Save Velocity Log",
+                                               self.settingsDialog.saveDefault.value.text() +'/'+ self.animalSelection.currentText() + "_" + self.startDateTime + "_treadmill_log","(*.csv)"
+                                               )
         print("savename"+saveName[0])
 
         if saveName[0] != '':
             self.disconnectMotors()
             with open(saveName[0], "w") as text_file:
                 text_file.write(self.textEdit.toPlainText())
+            self.textEdit.clear()
         else:
             print("save canceled") 
 
@@ -227,7 +261,7 @@ class MainWindow(QMainWindow):
         openFolder(str(Path(saveDirectory)))
 
     def openAppLocation(self):
-        openFolder(str(Path(os.getcwd())))     
+        openFolder(str(Path(os.getcwd())))
 
     def closeEvent(self, event):
         self.disconnectMotors()
@@ -240,7 +274,7 @@ class MainWindow(QMainWindow):
         #     event.ignore()
 
     def setupMenu(self):
-        bar  = self.menuBar()
+        bar = self.menuBar()
         fileMenu  = bar.addMenu('File')
         settings_action = fileMenu.addAction('Settings...')
         settings_action.triggered.connect(self.settingsDialog.exec)
