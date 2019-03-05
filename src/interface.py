@@ -11,8 +11,8 @@ from pathlib import Path
 # MAJOR version when you make incompatible API changes,
 # MINOR version when you add functionality in a backwards-compatible manner, and
 # PATCH version when you make backwards-compatible bug fixes.
-version  =  "1.2.0"
-versionDate = "03/04/2019"
+version  =  "1.3.0"
+versionDate = "03/05/2019"
 
 if sys.platform == 'darwin':
     def openFolder(path):
@@ -28,6 +28,15 @@ elif sys.platform == 'win32':
             output = e.output
             print(output)
 
+#https://blog.aaronhktan.com/posts/2018/05/14/pyqt5-pyinstaller-executable
+#supported packages:https://github.com/pyinstaller/pyinstaller/wiki/Supported-Packages
+#from windows command line `pyinstaller --onefile treadmill.spec`
+# Translate asset paths to useable format for PyInstaller
+def resource_path(relative_path):
+  if hasattr(sys, '_MEIPASS'):
+      return os.path.join(sys._MEIPASS, relative_path)
+  return os.path.join(os.path.abspath('.'), relative_path)
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -41,7 +50,7 @@ class MainWindow(QMainWindow):
         columnWidth = 188
 
         self.settings_btn = QPushButton('Edit Settings')
-        self.settings_btn.setIcon(QIcon('src/icons/settings.svg'))
+        self.settings_btn.setIcon(QIcon(resource_path('src/icons/settings.svg')))
         self.settings_btn.setIconSize(QSize(11,11))
         self.settings_btn.setFlat(True)
 
@@ -63,7 +72,7 @@ class MainWindow(QMainWindow):
         self.plus_btn = QPushButton('+')
 
         self.stop_btn = QPushButton()
-        self.stop_btn.setIcon(QIcon('src/icons/stop.svg'))
+        self.stop_btn.setIcon(QIcon(resource_path('src/icons/stop.svg')))
         self.stop_btn.setIconSize(QSize(columnWidth*.7,columnWidth*.7))
         self.stop_btn.setFixedSize(columnWidth,columnWidth)
 
@@ -204,12 +213,10 @@ class MainWindow(QMainWindow):
             self.right_motor.duty.spin.setValue(self.right_motor.duty.spin.value() - .01) 
         self.updateMotors()
 
-
     def stopMotors(self):
         self.left_motor.stop_fxn()
         self.right_motor.stop_fxn()
         self.liveWidget.setEnabled(False)
-
 
     def startUpdating(self):
         self.independent_check.setEnabled(True)
@@ -221,6 +228,7 @@ class MainWindow(QMainWindow):
         self.startTime = time.time()
         self.startDateTime = QDateTime.currentDateTime().toString("yyyy_MM_dd_hh_mm")
         self.textEdit.insertPlainText(self.startDateTime + "\n")
+        self.textEdit.insertPlainText("version," + version + '\n')
         self.textEdit.moveCursor(QTextCursor.End) #scrolls to the end whenever there is new data
 
     def stopUpdating(self):

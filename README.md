@@ -22,16 +22,21 @@ This is documentation for controlling a split-belt treadmill. The hardware was d
 
 ### Installation
 
-1. Download and install [Python 3](https://www.anaconda.com/distribution/)
-2. Run `pip install PyQt5` or follow instructions [here](https://www.riverbankcomputing.com/software/pyqt/download5)
-3. Install Phidget Drivers
+#### If you just want to use the sofware on a Windows computer:
+-  Download and install the [Phidgets Windows Drivers](https://www.phidgets.com/docs/OS_-_Windows#Quick_Downloads)
+
+#### If you'd like to modify and run the Python code on a Windows or Mac computer: 
+
+-  Download and install Phidget Drivers and Phidget Python Module
     - [Windows Instructions](https://www.phidgets.com/docs/Language_-_Python_Windows_Command_Line)
     - [Mac Instructions](https://www.phidgets.com/docs/Language_-_Python_macOS_Terminal)
-
+-  Download and install [Python 3](https://www.anaconda.com/distribution/)
+-  Run `pip install PyQt5` or follow instructions [here](https://www.riverbankcomputing.com/software/pyqt/download5)
+    
 ### Quickstart
 
 1. Start the program
-    - If you're on a Windows computer you can double click the "run_program.bat" file to start the program
+    - If you're on a Windows computer you can double click the **Treadmill.exe** file to start the program
     - Otherwise, from the command line, navigate to this directory and run `python treadmill.py`
 2. Click the "Edit Settings" 
     - Setup a default save directory
