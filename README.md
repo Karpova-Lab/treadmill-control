@@ -21,7 +21,6 @@ This is documentation for controlling a split-belt treadmill. The hardware was d
 - Phidget Drivers and Python libraries
 
 ### Installation
-
 #### If you just want to use the sofware on a Windows computer:
 -  Download and install the [Phidgets Windows Drivers](https://www.phidgets.com/docs/OS_-_Windows#Quick_Downloads)
 

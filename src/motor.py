@@ -3,6 +3,7 @@ from src.customComponents import *
 from PyQt5.QtWidgets import QCheckBox, QFrame, QProgressBar
 from PyQt5.QtCore import QObject, pyqtSignal, QSettings
 import sys
+from math import pi
 
 class TreadMotor(QObject):
     startClock = pyqtSignal()
@@ -34,7 +35,7 @@ class TreadMotor(QObject):
         self.duty = label_and_spin('Duty Cycle',[0.1,1],.01,.13)
         self.update_btn = QPushButton('Send Parameters')
 
-        self.speed_lbl = QLabel(' rpm')
+        self.speed_lbl = QLabel(' cm/s')
         self.speed_lbl.setAlignment(Qt.AlignCenter)
         self.speed_bar = QProgressBar()
         self.speed_bar.setMinimum(0)
@@ -67,7 +68,11 @@ class TreadMotor(QObject):
         self.startTime = time.time()
         self.saveName = saveName
         self.dir = direction
-
+        commutations = 8*3 # 8 poles * 3 phase
+        gearReduction = 4.9 # 4.9:1 gearbox
+        wheelRadius = .75*2.54 # .75inches * 2.54"/cm
+        self.conversion = 1/commutations*1/gearReduction *2*pi*wheelRadius # cm
+        
     def update_fxn(self):
         if self.flip_checkbox.isChecked():
             flip = -1
@@ -88,7 +93,7 @@ class TreadMotor(QObject):
                 self.ch.openWaitForAttachment(5000)
                 self.isConnected = True
                 self.ch.setDataInterval(100)
-                self.ch.setRescaleFactor(1/(8*3*4.9)) # 8 poles * 3 phase * 4.9:1 gear reduction. Unit=rpm
+                self.ch.setRescaleFactor(self.conversion)
             except PhidgetException as e:
                 PrintOpenErrorMessage(e, self.ch)
                 raise EndProgramSignal("Program Terminated: Open Failed")
@@ -111,7 +116,7 @@ class TreadMotor(QObject):
 
     def getSpeed(self):
         self.newPos = self.ch.getPosition()
-        self.speed = abs((self.newPos - self.oldPos)*60)
+        self.speed = abs((self.newPos - self.oldPos)*2) #timer interval is 500ms so we multiply distance by 2 to get cm/s
         self.oldPos = self.newPos
-        self.speed_lbl.setText('{:.1f} rpm'.format(self.speed))
+        self.speed_lbl.setText('{:.1f} cm/s'.format(self.speed))
         self.speed_bar.setValue(self.speed)
