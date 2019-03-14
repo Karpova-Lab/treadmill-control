@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow,QMessageBox,QPlainTextEdit,QComboBox
-from PyQt5.QtGui import QTextCursor,QIcon
-from PyQt5.QtCore import QTimer,QDateTime,QSize
+from PyQt5.QtGui import QTextCursor, QIcon, QKeyEvent
+from PyQt5.QtCore import QTimer, QDateTime, QSize, Qt
 from src.motor import *
 from src.settings import *
 import time
@@ -11,8 +11,8 @@ from pathlib import Path
 # MAJOR version when you make incompatible API changes,
 # MINOR version when you add functionality in a backwards-compatible manner, and
 # PATCH version when you make backwards-compatible bug fixes.
-version  =  "1.3.1"
-versionDate = "03/06/2019"
+version = "1.4.0"
+versionDate = "03/14/2019"
 
 if sys.platform == 'darwin':
     def openFolder(path):
@@ -53,9 +53,11 @@ class MainWindow(QMainWindow):
         self.settings_btn.setIcon(QIcon(resource_path('src/icons/settings.svg')))
         self.settings_btn.setIconSize(QSize(11,11))
         self.settings_btn.setFlat(True)
+        self.settings_btn.setFocusPolicy(Qt.NoFocus)
 
         self.independent_check = QCheckBox('Independent Control')
         self.independent_check.setEnabled(False)
+        self.independent_check.setFocusPolicy(Qt.NoFocus)
 
         self.left_motor = TreadMotor('Left Motor',1)      
         self.right_motor = TreadMotor('Right Motor',-1)   
@@ -65,8 +67,11 @@ class MainWindow(QMainWindow):
         self.settingsDialog = settingsWindow()
         self.animalID =  QLabel('Animal #')
         self.animalSelection = QComboBox()
+        self.animalSelection.setFocusPolicy(Qt.NoFocus)
         self.updateRatList()
         self.connect_btn  = QPushButton('Connect')   
+        self.connect_btn.setFocusPolicy(Qt.NoFocus)
+
 
         self.minus_btn = QPushButton('-')
         self.plus_btn = QPushButton('+')
@@ -191,7 +196,6 @@ class MainWindow(QMainWindow):
             self.liveWidget.setEnabled(True)
         else:
             self.updateMotors()
-
     def rightUpdateClicked(self):
         self.right_motor.update_fxn()
         self.liveWidget.setEnabled(True)
@@ -307,3 +311,16 @@ class MainWindow(QMainWindow):
             self.animalSelection.addItems(settings.value('Animal List'))
         except:
             pass
+
+    def keyPressEvent(self, event):
+        if type(event) == QKeyEvent:
+            pressedKey = event.key()
+            if pressedKey == 32: # stop motors with space bar
+                self.stopMotors()
+            elif pressedKey == 16777236 or pressedKey == 16777235 : # increase duty with up or right arrow
+                self.increase_duty()
+            elif pressedKey == 16777234 or pressedKey == 16777237: # decreased duty with down or left arrow
+                self.decrease_duty()
+            event.accept()
+        else:
+            event.ignore()

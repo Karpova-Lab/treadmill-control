@@ -33,7 +33,10 @@ class TreadMotor(QObject):
         self.accel = label_and_spin('Acceleration',[.1,100],.01,.1)
         self.decel = label_and_spin('Deceleration',[.1,100],.01,.5)
         self.duty = label_and_spin('Duty Cycle',[0.1,1],.01,.13)
+        
         self.update_btn = QPushButton('Send Parameters')
+        self.update_btn.setStyleSheet("background-color: #00cc00;")
+        self.update_btn.setFocusPolicy(Qt.NoFocus)
 
         self.speed_lbl = QLabel(' cm/s')
         self.speed_lbl.setAlignment(Qt.AlignCenter)
@@ -80,6 +83,9 @@ class TreadMotor(QObject):
             flip = 1
         self.ch.setTargetVelocity(self.duty.spin.value()*self.dir*flip)
         self.ch.setAcceleration(self.accel.spin.value())
+        self.duty.spin.clearFocus()
+        self.accel.spin.clearFocus()
+        self.decel.spin.clearFocus()
 
     def stop_fxn(self):
         self.ch.setAcceleration(self.decel.spin.value()) # set to 0 for e-stop
