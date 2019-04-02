@@ -30,9 +30,9 @@ class TreadMotor(QObject):
         # widgets
         self.connect = QPushButton('Connect '+saveName)
         self.flip_checkbox = QCheckBox('Flip Direction')
-        self.accel = label_and_spin('Acceleration',[.1,100],.01,.1)
+        self.accel = label_and_spin('Acceleration',[.1,100],.01,.25)
         self.decel = label_and_spin('Deceleration',[.1,100],.01,.5)
-        self.duty = label_and_spin('Duty Cycle',[0.1,1],.01,.13)
+        self.duty = label_and_spin('Duty Cycle',[0.15,1],.01,.15)
         
         self.update_btn = QPushButton('Send Parameters')
         self.update_btn.setStyleSheet("background-color: #00cc00;")
@@ -72,7 +72,7 @@ class TreadMotor(QObject):
         self.saveName = saveName
         self.dir = direction
         commutations = 8*3 # 8 poles * 3 phase
-        gearReduction = 4.9 # 4.9:1 gearbox
+        gearReduction = 24 # 24:1 gearbox
         wheelRadius = .75*2.54 # .75inches * 2.54"/cm
         self.conversion = 1/commutations*1/gearReduction *2*pi*wheelRadius # cm
         

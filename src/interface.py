@@ -11,8 +11,8 @@ from pathlib import Path
 # MAJOR version when you make incompatible API changes,
 # MINOR version when you add functionality in a backwards-compatible manner, and
 # PATCH version when you make backwards-compatible bug fixes.
-version = "1.4.0"
-versionDate = "03/14/2019"
+version = "1.4.1"
+versionDate = "03/22/2019"
 
 if sys.platform == 'darwin':
     def openFolder(path):
